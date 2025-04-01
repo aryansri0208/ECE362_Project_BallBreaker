@@ -1,5 +1,7 @@
 #include "display.h"
 #include "stm32f0xx.h"
+#include <stdbool.h>
+
 
 void init_display() {
     // SPI init for TFT
