@@ -8,19 +8,19 @@
         {
             "name": "PlatformIO",
             "includePath": [
-                "C:/Users/aryan/Desktop/ECE 362/lab-6-spi-aryansri0208/include",
-                "C:/Users/aryan/Desktop/ECE 362/lab-6-spi-aryansri0208/src",
-                "C:/Users/aryan/.platformio/packages/framework-cmsis/CMSIS/Include",
-                "C:/Users/aryan/.platformio/packages/framework-cmsis-stm32f0/Include",
+                "C:/Users/rosha/OneDrive/ECE362/ECE362_Project_BallBreaker/include",
+                "C:/Users/rosha/OneDrive/ECE362/ECE362_Project_BallBreaker/src",
+                "C:/Users/rosha/.platformio/packages/framework-cmsis/CMSIS/Include",
+                "C:/Users/rosha/.platformio/packages/framework-cmsis-stm32f0/Include",
                 ""
             ],
             "browse": {
                 "limitSymbolsToIncludedHeaders": true,
                 "path": [
-                    "C:/Users/aryan/Desktop/ECE 362/lab-6-spi-aryansri0208/include",
-                    "C:/Users/aryan/Desktop/ECE 362/lab-6-spi-aryansri0208/src",
-                    "C:/Users/aryan/.platformio/packages/framework-cmsis/CMSIS/Include",
-                    "C:/Users/aryan/.platformio/packages/framework-cmsis-stm32f0/Include",
+                    "C:/Users/rosha/OneDrive/ECE362/ECE362_Project_BallBreaker/include",
+                    "C:/Users/rosha/OneDrive/ECE362/ECE362_Project_BallBreaker/src",
+                    "C:/Users/rosha/.platformio/packages/framework-cmsis/CMSIS/Include",
+                    "C:/Users/rosha/.platformio/packages/framework-cmsis-stm32f0/Include",
                     ""
                 ]
             },
@@ -32,7 +32,7 @@
                 "STM32F091",
                 ""
             ],
-            "compilerPath": "C:/Users/aryan/.platformio/packages/toolchain-gccarmnoneeabi/bin/arm-none-eabi-gcc.exe",
+            "compilerPath": "C:/Users/rosha/.platformio/packages/toolchain-gccarmnoneeabi/bin/arm-none-eabi-gcc.exe",
             "compilerArgs": [
                 "-mthumb",
                 "-mcpu=cortex-m0",
