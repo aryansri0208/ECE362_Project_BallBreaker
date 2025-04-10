@@ -27,27 +27,26 @@ int bricks[BRICK_ROWS][BRICK_COLS];  //1-active, 0-destroyed
 // Score
 int score = 0;
 
-void init_display() {
-    RCC->AHBENR |= RCC_AHBENR_GPIOAEN;    //GPIOA clock
-    RCC->APB2ENR |= RCC_APB2ENR_SPI1EN;   //SPI1 clock
+void init_display(void) {
+    RCC->AHBENR |= RCC_AHBENR_GPIOBEN;
+    RCC->APB2ENR |= RCC_APB2ENR_SPI1EN;
 
-    //configure GPIOA pins
-    //PA5 = SPI1_SCK, PA7 = SPI1_MOSI
-    GPIOA->MODER &= ~(GPIO_MODER_MODER5 | GPIO_MODER_MODER7);
-    GPIOA->MODER |=  (GPIO_MODER_MODER5_1 | GPIO_MODER_MODER7_1);       GPIOA->AFR[0] &= ~(GPIO_AFRL_AFRL5 | GPIO_AFRL_AFRL7);        
+    //PB3=SCK, PB4=MISO, PB5=MOSI 
+    GPIOB->MODER &= ~(GPIO_MODER_MODER3 | GPIO_MODER_MODER4 | GPIO_MODER_MODER5);
+    GPIOB->MODER |=  (GPIO_MODER_MODER3_1 | GPIO_MODER_MODER4_1 | GPIO_MODER_MODER5_1); //alternate function
 
-    // PA2= RST, PA3=DC, PA4 =General purpose output
-    GPIOA->MODER &= ~(GPIO_MODER_MODER2 | GPIO_MODER_MODER3 | GPIO_MODER_MODER4);
-    GPIOA->MODER |=  (GPIO_MODER_MODER2_0 | GPIO_MODER_MODER3_0 | GPIO_MODER_MODER4_0);
+    GPIOB->AFR[0] &= ~(GPIO_AFRL_AFSEL3 | GPIO_AFRL_AFSEL4 | GPIO_AFRL_AFSEL5); 
 
-    GPIOA->BSRR = GPIO_BSRR_BS_2 | GPIO_BSRR_BS_3 | GPIO_BSRR_BS_4;
-
-    SPI1->CR1 = 0;             
-    SPI1->CR1 |= SPI_CR1_MSTR;         
-    SPI1->CR1 |= SPI_CR1_BR_1;           
-    SPI1->CR1 |= SPI_CR1_SSM | SPI_CR1_SSI;
-    SPI1->CR1 |= SPI_CR1_SPE;        
+    SPI2->CR1 &= ~SPI_CR1_SPE;
+    SPI2->CR1 |= SPI_CR1_BR;
+    SPI2->CR2 |= SPI_CR2_DS;
+    SPI2->CR1 |= SPI_CR1_MSTR;
+    SPI2->CR2 |= SPI_CR2_SSOE | SPI_CR2_NSSP;
+    SPI2->CR2 |= SPI_CR2_TXDMAEN;
+    SPI2->CR1 |= SPI_CR1_SPE;     
 }
+
+
 
 void draw_score(void) {
     char buffer[16];
