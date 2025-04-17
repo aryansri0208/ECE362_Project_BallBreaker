@@ -42,3 +42,5 @@ int main(void) {
     game_loop();
     return 0;
 }
+
+init_gesture_sensor();
