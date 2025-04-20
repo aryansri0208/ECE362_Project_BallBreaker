@@ -37,13 +37,18 @@ void init_display(void) {
 
     GPIOB->AFR[0] &= ~(GPIO_AFRL_AFSEL3 | GPIO_AFRL_AFSEL4 | GPIO_AFRL_AFSEL5); 
 
-    SPI2->CR1 &= ~SPI_CR1_SPE;
-    SPI2->CR1 |= SPI_CR1_BR;
-    SPI2->CR2 |= SPI_CR2_DS;
-    SPI2->CR1 |= SPI_CR1_MSTR;
-    SPI2->CR2 |= SPI_CR2_SSOE | SPI_CR2_NSSP;
-    SPI2->CR2 |= SPI_CR2_TXDMAEN;
-    SPI2->CR1 |= SPI_CR1_SPE;     
+    SPI1->CR1 &= ~SPI_CR1_SPE;
+    SPI1->CR1 |= (SPI_CR1_BR_0 | SPI_CR1_BR_1 | SPI_CR1_BR_2);
+    SPI1->CR2 &= ~(SPI_CR2_DS_0 | SPI_CR2_DS_1 | SPI_CR2_DS_2 | SPI_CR2_DS_3);
+    SPI1->CR2 |= (SPI_CR2_DS_0 | SPI_CR2_DS_1 | SPI_CR2_DS_2);
+    SPI1->CR1 |= SPI_CR1_MSTR;
+    SPI1->CR1 |= SPI_CR1_SSI | SPI_CR1_SSM;
+    //SPI1->CR2 |= SPI_CR2_TXDMAEN;
+    //SPI1->CR1 |= SPI_CR1_DFF;
+
+    SPI1->CR2 |= SPI_CR2_FRXTH;
+    SPI1->CR1 |= SPI_CR1_SPE;     
+    
 }
 
 
@@ -51,7 +56,7 @@ void init_display(void) {
 void draw_score(void) {
     char buffer[16];
     sprintf(buffer, "Score: %d", score);
-    LCD_ShowString(10, 2, buffer, RED, BLACK, 12, 0);
+    LCD_DrawString(10, 2, buffer, RED, BLACK, 12, 0);
 }
 
 void draw_background(void) {
@@ -108,7 +113,7 @@ void move_ball_and_check_collision(void) {
     ball_y += ball_vy;
 
     //runs into wall
-    if (ball_x - ball_radius <= 0 || ball_x + ball_radius >= SCREEN_WIDTH)
+    if (ball_x - ball_radius <= 0 || ball_x + ball_radius >= LCD_W)
         ball_vx = -ball_vx;
     if (ball_y - ball_radius <= 0)
         ball_vy = -ball_vy;
@@ -152,25 +157,23 @@ void draw_game_frame(void) {
 }
 
 void display_game_over(void) {
-    LCD_ShowString(60, 160, "GAME OVER", RED, BLACK, 16, 1);
+    LCD_DrawString(60, 160, "GAME OVER", RED, BLACK, 16, 1);
 }
 
 int display_main(void) {
     LCD_Setup();           
-    init_game_state();     
-    draw_game_frame();    
+    draw_background();
+    draw_paddle(); 
 
-    while (1) {
-        nano_wait(1000000);  
+    // while (1) {
+    //     nano_wait(1000000);  
 
-        move_ball_and_check_collision();
-        draw_game_frame();
+    //     move_ball_and_check_collision();
+    //     draw_game_frame();
 
-        if (ball_y - 4 > SCREEN_HEIGHT) {
-            display_game_over();
-            break;
-        }
-    }
-
-    while (1);  
+    //     if (ball_y - 4 > LCD_H) {
+    //         display_game_over();
+    //         break;
+    //     }
+    // } 
 }

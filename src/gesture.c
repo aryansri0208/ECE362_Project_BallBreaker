@@ -50,13 +50,9 @@ void init_gesture_sensor() {
     if (id != 0xAB) return;
 
     i2c_write(0x80, 0x41); // ENABLE: PON + GEN
-    i2c_write(0xA3, 0xFF); // GCONF1
-    i2c_write(0xA4, 0x00); // GCONF2
-    i2c_write(0xAB, 0x00); // GCONF3
-    i2c_write(0xAD, 0x00); // GCONF4
+    i2c_write(0xAD, 0x01); // starts gesture
 }
 
-// ----- Gesture Detection (LEFT/RIGHT Only) -----
 Direction get_gesture_direction() {
     uint8_t gstatus = i2c_read(0xAF);
     if ((gstatus & 0x01) == 0) return DIR_NONE;
@@ -64,8 +60,10 @@ Direction get_gesture_direction() {
     uint8_t gflvl = i2c_read(0xAE);
     if (gflvl == 0) return DIR_NONE;
 
-    uint8_t left = i2c_read(0xFC);
-    uint8_t right = i2c_read(0xFC);
+    i2c_read(0xFC); //up
+    i2c_read(0xFC); //down
+    uint8_t left = i2c_read(0xFC); //left
+    uint8_t right = i2c_read(0xFC); //right
 
     if (left > right + 10)
         return DIR_LEFT;
