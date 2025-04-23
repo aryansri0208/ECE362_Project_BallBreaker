@@ -31,27 +31,135 @@ uint8_t i2c_read(uint8_t reg) {
     return val;
 }
 
-// ----- Init Sensor -----
-void init_gesture_sensor() {
-    RCC->AHBENR |= RCC_AHBENR_GPIOBEN;
-    RCC->APB1ENR |= RCC_APB1ENR_I2C1EN;
+void enable_ports() {
+    RCC->AHBENR |= RCC_AHBENR_GPIOAEN;
 
-    GPIOB->MODER &= ~(GPIO_MODER_MODER6 | GPIO_MODER_MODER7);
-    GPIOB->MODER |= GPIO_MODER_MODER6_1 | GPIO_MODER_MODER7_1;
-    GPIOB->AFR[0] |= (1 << (4 * 6)) | (1 << (4 * 7));
-    GPIOB->OTYPER |= GPIO_OTYPER_OT_6 | GPIO_OTYPER_OT_7;
-    GPIOB->PUPDR |= GPIO_PUPDR_PUPDR6_0 | GPIO_PUPDR_PUPDR7_0;
+    GPIOA->MODER &= ~(GPIO_MODER_MODER11 | GPIO_MODER_MODER12);
+    GPIOA->MODER |= (GPIO_MODER_MODER11_1 | GPIO_MODER_MODER12_1);
+    GPIOA->AFR[1] &= ~((0xF << 12) | (0xF << 16));
+    GPIOA->AFR[1] |= ((0x5 << 12) | (0x5 << 16));
 
-    I2C1->CR1 &= ~I2C_CR1_PE;
-    I2C1->TIMINGR = 0x00300F38; // 400kHz
-    I2C1->CR1 |= I2C_CR1_PE;
-
-    uint8_t id = i2c_read(0x92);
-    if (id != 0xAB) return;
-
-    i2c_write(0x80, 0x41); // ENABLE: PON + GEN
-    i2c_write(0xAD, 0x01); // starts gesture
+    GPIOA->OTYPER |= GPIO_OTYPER_OT_11 | GPIO_OTYPER_OT_12;
+    GPIOA->PUPDR &= ~(GPIO_PUPDR_PUPDR11 | GPIO_PUPDR_PUPDR12);
+    GPIOA->PUPDR |= (GPIO_PUPDR_PUPDR11_0 | GPIO_PUPDR_PUPDR12_0);
 }
+
+void init_i2c() {
+    RCC->APB1ENR |= RCC_APB1ENR_I2C2EN;
+    I2C2->CR1 &= ~I2C_CR1_PE;
+    I2C2->CR1 &= ~I2C_CR1_ANFOFF;
+    I2C2->CR1 |= I2C_CR1_ERRIE;
+    I2C2->CR1 |= I2C_CR1_NOSTRETCH;
+
+    I2C2->TIMINGR = (5<<28) | (4<<20) | (2<<16) | (0xF<<8) | (0x13<<0);
+
+    I2C2->CR2 &= ~I2C_CR2_ADD10;
+
+    I2C2->CR1 |= I2C_CR1_PE;
+}
+
+// i2c_start
+void i2c_start(uint8_t targadr, uint8_t size, uint8_t dir) {
+    uint32_t tmpreg = I2C2->CR2;
+
+    tmpreg &= ~(I2C_CR2_SADD | I2C_CR2_NBYTES | I2C_CR2_RD_WRN | I2C_CR2_START | I2C_CR2_STOP);
+    tmpreg |= ((dir << 10) & I2C_CR2_RD_WRN);
+    tmpreg |= ((targadr << 1) & I2C_CR2_SADD) | ((size << 16) & I2C_CR2_NBYTES);
+    tmpreg |= I2C_CR2_START;
+    I2C2->CR2 = tmpreg;
+}
+
+void i2c_stop() {
+    if (I2C2->ISR & I2C_ISR_STOPF) {
+        return;  
+    }
+
+    I2C2->CR2 |= I2C_CR2_STOP;
+    while (I2C2->ISR & I2C_ISR_STOPF) {
+    }
+    I2C2->ICR |= I2C_ICR_STOPCF;
+}
+
+
+
+
+void i2c_waitidle() {
+    while (I2C2->ISR & I2C_ISR_BUSY) {
+    }
+}
+
+int i2c_senddata(uint8_t targadr, uint8_t *data, uint8_t size) {
+    int count;
+
+
+    i2c_waitidle();
+
+    i2c_start(targadr, size, 0);  
+
+    for (int i = 0; i < size; i++) {
+        count = 0;
+
+        while ((I2C2->ISR & I2C_ISR_TXIS) == 0) {
+            count += 1;
+            if (count > 1000000) {  
+                return -1;  
+            }
+
+            if (i2c_checknack()) {
+                i2c_clearnack();
+                i2c_stop();
+                return -1;
+            }
+        }
+
+        I2C1->TXDR = data[i];
+    }
+
+    while (!(I2C2->ISR & I2C_ISR_TC)) {
+        if (I2C2->ISR & I2C_ISR_NACKF) {
+            return -1;  
+        }
+    }
+
+    i2c_stop();
+    return 0;
+}
+
+
+int i2c_recvdata(uint8_t targadr, uint8_t *data, uint8_t size) {
+    int count;
+
+    i2c_waitidle();
+    i2c_start(targadr, size, 1); 
+    for (int i = 0; i < size; i++) {
+        count = 0;
+
+        while ((I2C1->ISR & I2C_ISR_RXNE) == 0) {
+            count += 1;
+            if (count > 1000000) { 
+                return -1; 
+            }
+
+
+            if (i2c_checknack()) {
+                i2c_clearnack();
+                i2c_stop();
+                return -1; 
+            }
+        }
+        data[i] = I2C1->RXDR & I2C_RXDR_RXDATA;
+    }
+
+    while (!(I2C1->ISR & I2C_ISR_TC)) {
+        if (I2C1->ISR & I2C_ISR_NACKF) {
+            return -1;  
+        }
+    }
+    i2c_stop();
+    return 0;
+}
+
+
 
 Direction get_gesture_direction() {
     uint8_t gstatus = i2c_read(0xAF);

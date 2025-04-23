@@ -1,0 +1,6 @@
+{
+    "files.associations": {
+        "display_game_function.h": "c",
+        "gesture.h": "c"
+    }
+}

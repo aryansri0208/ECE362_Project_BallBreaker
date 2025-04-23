@@ -11,7 +11,7 @@ void internal_clock();
 int main(void) {
     internal_clock();
     display_main();
-    //init_gesture_sensor();
-    //get_gesture_direction();
+ //   init_gesture_sensor();
+    get_gesture_direction();
     return 0;
 }
