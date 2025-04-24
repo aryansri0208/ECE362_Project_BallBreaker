@@ -11,7 +11,10 @@ void internal_clock();
 int main(void) {
     internal_clock();
     display_main();
- //   init_gesture_sensor();
-    get_gesture_direction();
+    enable_ports();
+    init_i2c();
+    i2c_start(0x39, 0, 0);
+    i2c_stop();
+    //get_gesture_direction();
     return 0;
 }

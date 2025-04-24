@@ -39,19 +39,19 @@ void enable_ports() {
     GPIOA->AFR[1] &= ~((0xF << 12) | (0xF << 16));
     GPIOA->AFR[1] |= ((0x5 << 12) | (0x5 << 16));
 
-    GPIOA->OTYPER |= GPIO_OTYPER_OT_11 | GPIO_OTYPER_OT_12;
-    GPIOA->PUPDR &= ~(GPIO_PUPDR_PUPDR11 | GPIO_PUPDR_PUPDR12);
-    GPIOA->PUPDR |= (GPIO_PUPDR_PUPDR11_0 | GPIO_PUPDR_PUPDR12_0);
+    // GPIOA->OTYPER |= GPIO_OTYPER_OT_11 | GPIO_OTYPER_OT_12;
+    // GPIOA->PUPDR &= ~(GPIO_PUPDR_PUPDR11 | GPIO_PUPDR_PUPDR12);
+    // GPIOA->PUPDR |= (GPIO_PUPDR_PUPDR11_0 | GPIO_PUPDR_PUPDR12_0);
 }
 
 void init_i2c() {
     RCC->APB1ENR |= RCC_APB1ENR_I2C2EN;
     I2C2->CR1 &= ~I2C_CR1_PE;
-    I2C2->CR1 &= ~I2C_CR1_ANFOFF;
+    I2C2->CR1 |= I2C_CR1_ANFOFF;
     I2C2->CR1 |= I2C_CR1_ERRIE;
     I2C2->CR1 |= I2C_CR1_NOSTRETCH;
 
-    I2C2->TIMINGR = (5<<28) | (4<<20) | (2<<16) | (0xF<<8) | (0x13<<0);
+    I2C2->TIMINGR |= (0x5<<28) | (0x3<<20) | (0x3<<16) | (0x3<<8) | (0x9<<0);
 
     I2C2->CR2 &= ~I2C_CR2_ADD10;
 
@@ -75,7 +75,7 @@ void i2c_stop() {
     }
 
     I2C2->CR2 |= I2C_CR2_STOP;
-    while (I2C2->ISR & I2C_ISR_STOPF) {
+    while (!(I2C2->ISR & I2C_ISR_STOPF)) {
     }
     I2C2->ICR |= I2C_ICR_STOPCF;
 }
@@ -88,7 +88,7 @@ void i2c_waitidle() {
     }
 }
 
-int i2c_senddata(uint8_t targadr, uint8_t *data, uint8_t size) {
+/*int i2c_senddata(uint8_t targadr, uint8_t *data, uint8_t size) {
     int count;
 
 
@@ -158,7 +158,7 @@ int i2c_recvdata(uint8_t targadr, uint8_t *data, uint8_t size) {
     i2c_stop();
     return 0;
 }
-
+*/
 
 
 Direction get_gesture_direction() {
