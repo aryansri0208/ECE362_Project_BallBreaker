@@ -21,8 +21,8 @@ void buzz_forever() {
 int main(void) {
     internal_clock();
     display_main();
-    //init_buttons();
-    //game_loop();
+    play_game();
+
     
     /*enable_ports();
     init_i2c();

@@ -5,15 +5,18 @@
 #include <string.h>
 #include <stdio.h>
 
+int score = 0;  // Global score variable
+
+
 // Paddle dimensions and starting position
 #define PADDLE_WIDTH   40
 #define PADDLE_HEIGHT  6
 int paddle_x = 100;
-int paddle_y = 300;
+int paddle_y = 290;
 
 // Ball dimensions (we won't move the ball for now)
 int ball_x = 120;
-int ball_y = 290;
+int ball_y = 280;
 int ball_radius = 4;
 
 // Only drawing and movement for now
@@ -78,12 +81,25 @@ void display_high_score(void) {
     draw_background();
 }
 
+void draw_score(void) {
+    char score_text[20];
+    sprintf(score_text, "Score: %d", score);
+
+    // Draw a white rectangle first to erase the old score
+    LCD_DrawFillRectangle(10, LCD_H - 20, 100, LCD_H, BLACK);
+
+    LCD_DrawString(10, LCD_H - 18, WHITE, BLACK, score_text, 16, 0);
+}
+
+
 void setup_game_screen(void) {
     display_high_score();
     draw_background();
     draw_bricks();
     draw_paddle();
     draw_ball();
+    draw_score();
+
 }
 
 // Movement functions
@@ -135,9 +151,13 @@ void play_game(void) {
     while (1) {
         if (is_button_pressed(1)) {
             move_paddle_left();
+            score += 1;  // Increase score (temporary logic)
+            draw_score(); 
         }
         if (is_button_pressed(2)) {
             move_paddle_right();
+            score += 1;  // Increase score (temporary logic)
+            draw_score();
         }
         for (volatile int i = 0; i < 50000; i++); // small delay
     }
