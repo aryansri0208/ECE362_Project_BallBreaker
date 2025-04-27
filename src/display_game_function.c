@@ -5,40 +5,29 @@
 #include <string.h>
 #include <stdio.h>
 
-// Paddle
+// Paddle dimensions and starting position
 #define PADDLE_WIDTH   40
 #define PADDLE_HEIGHT  6
 int paddle_x = 100;
 int paddle_y = 300;
 
-// Ball
+// Ball dimensions
 int ball_x = 120;
 int ball_y = 290;
 int ball_radius = 4;
-int ball_vx = 1;
-int ball_vy = -1;
+/*
+// Simple EEPROM read stub
+uint16_t eeprom_read_high_score(void) {
+    // TODO: Replace with your EEPROM reading function
+    return 123;  // Placeholder high score
+}*/
 
-// Bricks
-#define BRICK_ROWS 4
-#define BRICK_COLS 6
-#define BRICK_WIDTH  35
-#define BRICK_HEIGHT 12
-int bricks[BRICK_ROWS][BRICK_COLS];  //1-active, 0-destroyed
-
-// Score
-int score = 0;
-
-
-void draw_score(void) {
-    char buffer[16];
-    sprintf(buffer, "Score: %d", score);
-    LCD_DrawString(10, 2, buffer, RED, BLACK, 12, 0);
-}
-
+// Draw full black background
 void draw_background(void) {
     LCD_Clear(BLACK);
 }
 
+// Draw paddle
 void draw_paddle(void) {
     LCD_DrawFillRectangle(
         paddle_x,
@@ -49,89 +38,50 @@ void draw_paddle(void) {
     );
 }
 
-void draw_ball(void) {
-    LCD_Circle(ball_x, ball_y, ball_radius, 1, GREEN);
-}
-
+// Draw a small number of bricks
 void draw_bricks(void) {
-    int x_offset = 10;
-    int y_offset = 20;
-    int spacing = 5;
-
-    for (int row = 0; row < BRICK_ROWS; row++) {
-        for (int col = 0; col < BRICK_COLS; col++) {
-            if (bricks[row][col]) {
-                int x0 = x_offset + col * (BRICK_WIDTH + spacing);
-                int y0 = y_offset + row * (BRICK_HEIGHT + spacing);
-                LCD_DrawFillRectangle(x0, y0, x0 + BRICK_WIDTH, y0 + BRICK_HEIGHT, RED);
-            }
-        }
+    int brick_width = 30;
+    int brick_height = 10;
+    int start_x = 20;
+    int start_y = 20;
+    int gap = 5;
+    for (int i = 0; i < 6; i++) {
+        int x1 = start_x + i * (brick_width + gap);
+        int y1 = start_y;
+        LCD_DrawFillRectangle(x1, y1, x1 + brick_width, y1 + brick_height, YELLOW);
     }
 }
 
-void init_game_state(void) {
-    for (int row = 0; row < BRICK_ROWS; row++) {
-        for (int col = 0; col < BRICK_COLS; col++) {
-            bricks[row][col] = 1;
-        }
-    }
-    score = 0;
-    paddle_x = 100;
-    ball_x = 120;
-    ball_y = 290;
-    ball_vx = 1;
-    ball_vy = -1;
+// Draw ball (as a filled circle)
+void draw_ball(void) {
+    LCD_Circle(ball_x, ball_y, ball_radius, 1, WHITE);
 }
-
-void move_ball_and_check_collision(void) {
-    //move the ball
-    ball_x += ball_vx;
-    ball_y += ball_vy;
-
-    //runs into wall
-    if (ball_x - ball_radius <= 0 || ball_x + ball_radius >= LCD_W)
-        ball_vx = -ball_vx;
-    if (ball_y - ball_radius <= 0)
-        ball_vy = -ball_vy;
-
-    //hits paddle
-    if (ball_y + ball_radius >= paddle_y &&
-        ball_y + ball_radius <= paddle_y + PADDLE_HEIGHT &&
-        ball_x >= paddle_x && ball_x <= paddle_x + PADDLE_WIDTH) {
-        ball_vy = -ball_vy;
-    }
-
-    //hits bricks
-    int x_offset = 10;
-    int y_offset = 20;
-    int spacing = 5;
-    for (int row = 0; row < BRICK_ROWS; row++) {
-        for (int col = 0; col < BRICK_COLS; col++) {
-            if (!bricks[row][col]) continue;
-
-            int x0 = x_offset + col * (BRICK_WIDTH + spacing);
-            int y0 = y_offset + row * (BRICK_HEIGHT + spacing);
-            int x1 = x0 + BRICK_WIDTH;
-            int y1 = y0 + BRICK_HEIGHT;
-
-            if (ball_x >= x0 && ball_x <= x1 && ball_y >= y0 && ball_y <= y1) {
-                bricks[row][col] = 0;
-                score += 1;
-                ball_vy = -ball_vy;
-                return;
-            }
-        }
-    }
-}
-
-void draw_game_frame(void) {
+/*
+// Display high score on black screen for 3 seconds
+void display_high_score(void) {
     draw_background();
-    draw_bricks();
-    draw_paddle();
-    draw_ball();
-    draw_score();
+    uint16_t score = eeprom_read_high_score();
+    
+    // Draw a white box
+    int box_x1 = 60;
+    int box_y1 = 130;
+    int box_x2 = 180;
+    int box_y2 = 190;
+    LCD_DrawFillRectangle(box_x1, box_y1, box_x2, box_y2, WHITE);
+    
+    // Print the score inside
+    char score_text[20];
+    sprintf(score_text, "High: %d", score);
+    LCD_DrawString(70, 150, BLACK, WHITE, score_text, 16, 0);
+    
+    // Delay for 3 seconds (replace with proper delay if needed)
+    for (volatile int i = 0; i < 3000000; i++);
 }
-
-void display_game_over(void) {
-    LCD_DrawString(60, 160, "GAME OVER", RED, BLACK, 16, 1);
+*/
+// Setup initial game screen
+void setup_game_screen(void) {
+    //draw_background();
+    draw_paddle();
+    draw_bricks();
+    draw_ball();
 }
