@@ -5,6 +5,9 @@
 #include <string.h>
 #include <stdio.h>
 
+
+int time_left = 60;  // 60 seconds for 1 minute
+
 int score = 0;  // Global score variable
 
 // Paddle dimensions and starting position
@@ -43,6 +46,17 @@ void draw_paddle(void) {
         WHITE
     );
 }
+
+void draw_timer(void) {
+    char timer_text[20];
+    sprintf(timer_text, "Time: %d", time_left);
+
+    // Clear old timer area
+    LCD_DrawFillRectangle(LCD_W - 80, LCD_H - 20, LCD_W - 10, LCD_H, BLACK);
+
+    LCD_DrawString(LCD_W - 70, LCD_H - 18, WHITE, BLACK, timer_text, 16, 0);
+}
+
 
 void erase_paddle(void) {
     LCD_DrawFillRectangle(
@@ -119,6 +133,8 @@ void setup_game_screen(void) {
     draw_paddle();
     draw_ball();
     draw_score();
+    draw_timer();
+
 }
 
 // Movement functions
@@ -165,7 +181,7 @@ int check_brick_collision(void) {
                 int x2 = x1 + BRICK_WIDTH;
                 int y2 = y1 + BRICK_HEIGHT;
 
-                if (ball_x > x1 && ball_x < x2 && ball_y > y1 && ball_y < y2) {
+                if (ball_x >= x1 && ball_x <= x2 && ball_y >= y1 && ball_y <= y2) {
                     // Hit a brick
                     brick_exists[row][col] = 0;
                     LCD_DrawFillRectangle(x1, y1, x2, y2, BLACK); // Erase brick
@@ -211,6 +227,8 @@ void play_game(void) {
     init_buttons();
     setup_game_screen();
 
+    int frame_counter = 0;  // Frame counter for timing seconds
+
     while (1) {
         if (is_button_pressed(1)) {
             move_paddle_left();
@@ -246,5 +264,25 @@ void play_game(void) {
         }
 
         for (volatile int i = 0; i < 30000; i++); // small delay
+
+        frame_counter++;
+
+        if (frame_counter >= 33) { // Approximately 1 second (33 * small delays)
+            frame_counter = 0;
+            time_left--;
+            draw_timer();
+
+            if (time_left <= 0) {
+                break; // End game when timer runs out
+            }
+        }
     }
+
+    // After game ends
+    draw_background();
+    char end_text[40];
+    sprintf(end_text, "Game Over! Score: %d", score);
+    LCD_DrawString(30, 100, WHITE, BLACK, end_text, 16, 0);
+
+    while(1); // Stay stuck after game ends
 }
