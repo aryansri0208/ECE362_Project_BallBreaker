@@ -5,29 +5,30 @@
 
 // ----- Low-level I2C -----
 void i2c_write(uint8_t reg, uint8_t data) {
-    I2C1->CR2 = (APDS9960_I2C_ADDR << 1) | (2 << 16);
-    I2C1->CR2 |= I2C_CR2_START;
-    while (!(I2C1->ISR & I2C_ISR_TXIS));
-    I2C1->TXDR = reg;
-    while (!(I2C1->ISR & I2C_ISR_TXIS));
-    I2C1->TXDR = data;
-    while (!(I2C1->ISR & I2C_ISR_TC));
-    I2C1->CR2 |= I2C_CR2_STOP;
+    I2C2->CR2 = (APDS9960_I2C_ADDR << 1) | (2 << 16);
+    i2c_start(0x39, 2, 0);
+    //I2C2->CR2 |= I2C_CR2_START;
+    while (!(I2C2->ISR & I2C_ISR_TXIS));
+    I2C2->TXDR = reg;
+    // while (!(I2C2->ISR & I2C_ISR_TXIS));
+    // I2C2->TXDR = data;
+    /*while (!(I2C2->ISR & I2C_ISR_TC));
+    I2C2->CR2 |= I2C_CR2_STOP;*/
 }
 
 uint8_t i2c_read(uint8_t reg) {
-    I2C1->CR2 = (APDS9960_I2C_ADDR << 1) | (1 << 16);
-    I2C1->CR2 |= I2C_CR2_START;
-    while (!(I2C1->ISR & I2C_ISR_TXIS));
-    I2C1->TXDR = reg;
-    while (!(I2C1->ISR & I2C_ISR_TC));
+    I2C2->CR2 = (APDS9960_I2C_ADDR << 1) | (1 << 16);
+    I2C2->CR2 |= I2C_CR2_START;
+    while (!(I2C2->ISR & I2C_ISR_TXIS));
+    I2C2->TXDR = reg;
+    while (!(I2C2->ISR & I2C_ISR_TC));
 
-    I2C1->CR2 = (APDS9960_I2C_ADDR << 1) | (1 << 16) | I2C_CR2_RD_WRN;
-    I2C1->CR2 |= I2C_CR2_START;
-    while (!(I2C1->ISR & I2C_ISR_RXNE));
-    uint8_t val = I2C1->RXDR;
-    while (!(I2C1->ISR & I2C_ISR_STOPF));
-    I2C1->ICR |= I2C_ICR_STOPCF;
+    I2C2->CR2 = (APDS9960_I2C_ADDR << 1) | (1 << 16) | I2C_CR2_RD_WRN;
+    I2C2->CR2 |= I2C_CR2_START;
+    while (!(I2C2->ISR & I2C_ISR_RXNE));
+    uint8_t val = I2C2->RXDR;
+    while (!(I2C2->ISR & I2C_ISR_STOPF));
+    I2C2->ICR |= I2C_ICR_STOPCF;
     return val;
 }
 
@@ -51,7 +52,7 @@ void init_i2c() {
     I2C2->CR1 |= I2C_CR1_ERRIE;
     I2C2->CR1 |= I2C_CR1_NOSTRETCH;
 
-    I2C2->TIMINGR |= (0x5<<28) | (0x3<<20) | (0x3<<16) | (0x3<<8) | (0x9<<0);
+    I2C2->TIMINGR = 0x00B01A4B; //(0x5<<28) | (0x3<<20) | (0x3<<16) | (0x3<<8) | (0x9<<0);
 
     I2C2->CR2 &= ~I2C_CR2_ADD10;
 
@@ -112,7 +113,7 @@ void i2c_waitidle() {
             }
         }
 
-        I2C1->TXDR = data[i];
+        I2C2->TXDR = data[i];
     }
 
     while (!(I2C2->ISR & I2C_ISR_TC)) {
@@ -134,7 +135,7 @@ int i2c_recvdata(uint8_t targadr, uint8_t *data, uint8_t size) {
     for (int i = 0; i < size; i++) {
         count = 0;
 
-        while ((I2C1->ISR & I2C_ISR_RXNE) == 0) {
+        while ((I2C2->ISR & I2C_ISR_RXNE) == 0) {
             count += 1;
             if (count > 1000000) { 
                 return -1; 
@@ -147,11 +148,11 @@ int i2c_recvdata(uint8_t targadr, uint8_t *data, uint8_t size) {
                 return -1; 
             }
         }
-        data[i] = I2C1->RXDR & I2C_RXDR_RXDATA;
+        data[i] = I2C2->RXDR & I2C_RXDR_RXDATA;
     }
 
-    while (!(I2C1->ISR & I2C_ISR_TC)) {
-        if (I2C1->ISR & I2C_ISR_NACKF) {
+    while (!(I2C2->ISR & I2C_ISR_TC)) {
+        if (I2C2->ISR & I2C_ISR_NACKF) {
             return -1;  
         }
     }

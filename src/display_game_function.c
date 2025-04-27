@@ -68,19 +68,20 @@ void display_high_score(void) {
     uint16_t score = 20;
     
     // Draw a white box
-    int box_x1 = 60;
+    int box_x1 = 20;
     int box_y1 = 130;
-    int box_x2 = 180;
+    int box_x2 = 220;
     int box_y2 = 190;
     LCD_DrawFillRectangle(box_x1, box_y1, box_x2, box_y2, WHITE);
     
     // Print the score inside
     char score_text[20];
-    sprintf(score_text, "High: %d", score);
-    LCD_DrawString(70, 150, BLACK, WHITE, score_text, 16, 0);
+    sprintf(score_text, "Prev High Score: %d", score);
+    LCD_DrawString(50, 140, BLACK, WHITE, score_text, 16, 0);
     
     // Delay for 3 seconds (replace with proper delay if needed)
     for (volatile int i = 0; i < 3000000; i++);
+    draw_background();
 }
 
 // Setup initial game screen
