@@ -126,11 +126,12 @@ int is_button_pressed(int button_num) {
         return (GPIOA->IDR & (1 << 1)) == 0; // PA1
     } else if (button_num == 2) {
         return (GPIOA->IDR & (1 << 2)) == 0; // PA2
-    } /*else if (button_num == 3) {
+    } else if (button_num == 3) {
         return (GPIOA->IDR & (1 << 3)) == 0; // PA3
-    }*/
+    }
     return 0;
 }
+
 
 // Redraw the paddle and ball without full background clearing (faster)
 void redraw_moving_objects(void) {
@@ -151,12 +152,12 @@ void game_loop(void) {
         if (is_button_pressed(2)) {
             move_paddle_right();
         }
-        /*if (is_button_pressed(3)) {
+        if (is_button_pressed(3)) {
             launch_ball();
-        }*/
+        }
 
-        //update_ball();
-        //redraw_moving_objects();
+        update_ball();
+        redraw_moving_objects();
 
         for (volatile int i = 0; i < 50000; i++); // small delay
     }
