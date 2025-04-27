@@ -4,7 +4,7 @@
 #include "stm32f0xx.h"
 #include <string.h>
 #include <stdio.h>
-
+#include "sound.h"
 
 int time_left = 60;  // 60 seconds for 1 minute
 
@@ -173,6 +173,7 @@ void launch_ball(void) {
 }
 
 int check_brick_collision(void) {
+    init_buzzer();
     for (int row = 0; row < BRICK_ROWS; row++) {
         for (int col = 0; col < BRICK_COLS; col++) {
             if (brick_exists[row][col]) {
@@ -185,6 +186,7 @@ int check_brick_collision(void) {
                     // Hit a brick
                     brick_exists[row][col] = 0;
                     LCD_DrawFillRectangle(x1, y1, x2, y2, BLACK); // Erase brick
+                    buzz_with_dac(500, 200);
                     return 1;
                 }
             }
@@ -237,6 +239,8 @@ void play_game(void) {
             move_paddle_right();
         }
         if (is_button_pressed(3)) {
+            init_buzzer();
+            buzz_with_dac(10, 200);
             launch_ball();
         }
 
