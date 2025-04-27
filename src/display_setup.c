@@ -52,3 +52,20 @@ int display_main(void) {
     LCD_Setup();  
     setup_game_screen();
 }
+
+void init_buttons(void) {
+    // Enable clock for GPIOA
+    RCC->AHBENR |= RCC_AHBENR_GPIOAEN;
+
+    // Set PA1, PA2, PA3 as input (00)
+    GPIOA->MODER &= ~(0xF << (2 * 1)); // Clear bits for PA1, PA2
+    GPIOA->MODER &= ~(0x3 << (2 * 3)); // Clear bits for PA3
+
+    // Set PA1, PA2, PA3 pull-up (01)
+    GPIOA->PUPDR &= ~(0xF << (2 * 1)); // Clear pull settings
+    GPIOA->PUPDR &= ~(0x3 << (2 * 3));
+    
+    GPIOA->PUPDR |= (0x5 << (2 * 1));  // PA1 and PA2 pull-up
+    GPIOA->PUPDR |= (0x1 << (2 * 3));  // PA3 pull-up
+}
+
