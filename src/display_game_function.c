@@ -60,11 +60,12 @@ void draw_bricks(void) {
 void draw_ball(void) {
     LCD_Circle(ball_x, ball_y, ball_radius, 1, WHITE);
 }
-/*
+
 // Display high score on black screen for 3 seconds
 void display_high_score(void) {
     draw_background();
-    uint16_t score = eeprom_read_high_score();
+    //uint16_t score = eeprom_read_high_score();
+    uint16_t score = 20;
     
     // Draw a white box
     int box_x1 = 60;
@@ -81,10 +82,10 @@ void display_high_score(void) {
     // Delay for 3 seconds (replace with proper delay if needed)
     for (volatile int i = 0; i < 3000000; i++);
 }
-*/
+
 // Setup initial game screen
 void setup_game_screen(void) {
-    //draw_background();
+    display_high_score();
     draw_paddle();
     draw_bricks();
     draw_ball();
