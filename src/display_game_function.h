@@ -2,5 +2,5 @@
 #define DISPLAY_GAME_FUNCTION_H
 
 void setup_game_screen();
-
+void game_loop();
 #endif

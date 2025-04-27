@@ -101,7 +101,7 @@ void move_paddle_left(void) {
 
 // Move paddle right
 void move_paddle_right(void) {
-    if (paddle_x + PADDLE_WIDTH < LCD_W) {
+    if (paddle_x < 0) {
         paddle_x += 5;
     }
 }
