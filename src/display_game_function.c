@@ -15,12 +15,8 @@ int paddle_y = 300;
 int ball_x = 120;
 int ball_y = 290;
 int ball_radius = 4;
-/*
-// Simple EEPROM read stub
-uint16_t eeprom_read_high_score(void) {
-    // TODO: Replace with your EEPROM reading function
-    return 123;  // Placeholder high score
-}*/
+int ball_moving = 0;  // 0 = stationary, 1 = moving
+int ball_speed_y = -2; // ball moves up when launched
 
 // Draw full black background
 void draw_background(void) {
@@ -38,6 +34,7 @@ void draw_paddle(void) {
     );
 }
 
+// Draw bricks
 void draw_bricks(void) {
     int brick_width = 30;
     int brick_height = 10;
@@ -64,8 +61,7 @@ void draw_ball(void) {
 // Display high score on black screen for 3 seconds
 void display_high_score(void) {
     draw_background();
-    //uint16_t score = eeprom_read_high_score();
-    uint16_t score = 20;
+    uint16_t score = 20;  // placeholder
     
     // Draw a white box
     int box_x1 = 20;
@@ -75,7 +71,7 @@ void display_high_score(void) {
     LCD_DrawFillRectangle(box_x1, box_y1, box_x2, box_y2, WHITE);
     
     // Print the score inside
-    char score_text[20];
+    char score_text[30];
     sprintf(score_text, "Prev High Score: %d", score);
     LCD_DrawString(50, 140, BLACK, WHITE, score_text, 16, 0);
     
@@ -90,4 +86,78 @@ void setup_game_screen(void) {
     draw_paddle();
     draw_bricks();
     draw_ball();
+}
+
+// -----------------------------------------------
+// Movement and Game Functions
+// -----------------------------------------------
+
+// Move paddle left
+void move_paddle_left(void) {
+    if (paddle_x > 0) {
+        paddle_x -= 5;
+    }
+}
+
+// Move paddle right
+void move_paddle_right(void) {
+    if (paddle_x + PADDLE_WIDTH < LCD_W) {
+        paddle_x += 5;
+    }
+}
+
+// Launch the ball
+void launch_ball(void) {
+    if (ball_moving == 0) {
+        ball_moving = 1;
+    }
+}
+
+// Update ball position
+void update_ball(void) {
+    if (ball_moving) {
+        ball_y += ball_speed_y;
+    }
+}
+
+// Read button states
+int is_button_pressed(int button_num) {
+    if (button_num == 1) {
+        return (GPIOA->IDR & (1 << 1)) == 0; // PA1
+    } else if (button_num == 2) {
+        return (GPIOA->IDR & (1 << 2)) == 0; // PA2
+    } /*else if (button_num == 3) {
+        return (GPIOA->IDR & (1 << 3)) == 0; // PA3
+    }*/
+    return 0;
+}
+
+// Redraw the paddle and ball without full background clearing (faster)
+void redraw_moving_objects(void) {
+    // Erase old paddle and ball
+    LCD_DrawFillRectangle(0, paddle_y, LCD_W, paddle_y + PADDLE_HEIGHT, BLACK);
+    LCD_DrawFillRectangle(0, 0, LCD_W, 100, BLACK); // just erase top 100 px (ball area)
+
+    draw_paddle();
+    draw_ball();
+}
+
+// Game loop
+void game_loop(void) {
+    while (1) {
+        if (is_button_pressed(1)) {
+            move_paddle_left();
+        }
+        if (is_button_pressed(2)) {
+            move_paddle_right();
+        }
+        /*if (is_button_pressed(3)) {
+            launch_ball();
+        }*/
+
+        //update_ball();
+        //redraw_moving_objects();
+
+        for (volatile int i = 0; i < 50000; i++); // small delay
+    }
 }
