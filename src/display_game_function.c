@@ -38,17 +38,21 @@ void draw_paddle(void) {
     );
 }
 
-// Draw a small number of bricks
 void draw_bricks(void) {
     int brick_width = 30;
     int brick_height = 10;
     int start_x = 20;
     int start_y = 20;
     int gap = 5;
-    for (int i = 0; i < 6; i++) {
-        int x1 = start_x + i * (brick_width + gap);
-        int y1 = start_y;
-        LCD_DrawFillRectangle(x1, y1, x1 + brick_width, y1 + brick_height, YELLOW);
+
+    u16 row_colors[3] = { RED, GREEN, BLUE }; // Different color for each row
+
+    for (int row = 0; row < 3; row++) {
+        for (int i = 0; i < 6; i++) {
+            int x1 = start_x + i * (brick_width + gap);
+            int y1 = start_y + row * (brick_height + gap);
+            LCD_DrawFillRectangle(x1, y1, x1 + brick_width, y1 + brick_height, row_colors[row]);
+        }
     }
 }
 
