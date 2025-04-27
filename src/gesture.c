@@ -4,34 +4,6 @@
 #define APDS9960_I2C_ADDR 0x39
 
 // ----- Low-level I2C -----
-void i2c_write(uint8_t reg, uint8_t data) {
-    I2C2->CR2 = (APDS9960_I2C_ADDR << 1) | (2 << 16);
-    i2c_start(0x39, 2, 0);
-    //I2C2->CR2 |= I2C_CR2_START;
-    while (!(I2C2->ISR & I2C_ISR_TXIS));
-    I2C2->TXDR = reg;
-    // while (!(I2C2->ISR & I2C_ISR_TXIS));
-    // I2C2->TXDR = data;
-    /*while (!(I2C2->ISR & I2C_ISR_TC));
-    I2C2->CR2 |= I2C_CR2_STOP;*/
-}
-
-uint8_t i2c_read(uint8_t reg) {
-    I2C2->CR2 = (APDS9960_I2C_ADDR << 1) | (1 << 16);
-    I2C2->CR2 |= I2C_CR2_START;
-    while (!(I2C2->ISR & I2C_ISR_TXIS));
-    I2C2->TXDR = reg;
-    while (!(I2C2->ISR & I2C_ISR_TC));
-
-    I2C2->CR2 = (APDS9960_I2C_ADDR << 1) | (1 << 16) | I2C_CR2_RD_WRN;
-    I2C2->CR2 |= I2C_CR2_START;
-    while (!(I2C2->ISR & I2C_ISR_RXNE));
-    uint8_t val = I2C2->RXDR;
-    while (!(I2C2->ISR & I2C_ISR_STOPF));
-    I2C2->ICR |= I2C_ICR_STOPCF;
-    return val;
-}
-
 void enable_ports() {
     RCC->AHBENR |= RCC_AHBENR_GPIOAEN;
 
