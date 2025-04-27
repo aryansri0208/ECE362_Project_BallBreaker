@@ -50,6 +50,5 @@ void sdcard_io_high_speed() {
 
 int display_main(void) {
     LCD_Setup();  
-    draw_background();
-    draw_paddle(); 
+    setup_game_screen();
 }
