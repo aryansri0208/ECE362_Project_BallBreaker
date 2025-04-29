@@ -13,14 +13,13 @@ void internal_clock();
 int main(void) {
     internal_clock();
     display_main();
-    play_game();
+    //play_game();
 
-    
-    /*enable_ports();
+    enable_ports_gesture();
     init_i2c();
-    //i2c_start(0x39, 0, 0);
+    i2c_start_(0x39, 0, 0);
     i2c_write(0x80, 1);
-    i2c_stop();*/
+    i2c_stop();
 
     //buzz_for_sound(1000);
 

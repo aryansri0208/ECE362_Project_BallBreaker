@@ -5,6 +5,9 @@
 #include <string.h>
 #include <stdio.h>
 #include "sound.h"
+#include "eeprom.h"
+
+int high_score = 0;  // EEPROM-loaded high score
 
 int time_left = 60;  // 60 seconds for 1 minute
 
@@ -96,17 +99,18 @@ void draw_ball(void) {
 
 void display_high_score(void) {
     draw_background();
-    uint16_t high_score = 20;  // placeholder
-    
+    high_score = read_high_score();  // Load from EEPROM
+
     LCD_DrawFillRectangle(20, 130, 220, 190, WHITE);
-    
+
     char score_text[30];
     sprintf(score_text, "Prev High Score: %d", high_score);
     LCD_DrawString(50, 140, BLACK, WHITE, score_text, 16, 0);
-    
+
     for (volatile int i = 0; i < 3000000; i++);
     draw_background();
 }
+
 
 void draw_score(void) {
     char score_text[20];
@@ -227,6 +231,9 @@ void init_buttons(void) {
 // Main game function
 void play_game(void) {
     init_buttons();
+    enable_ports_eeprom();
+    init_i2c_eeprom();
+    //i2c_start_prom(0x000, 3, 0);
     setup_game_screen();
 
     int frame_counter = 0;  // Frame counter for timing seconds
@@ -287,6 +294,15 @@ void play_game(void) {
     char end_text[40];
     sprintf(end_text, "Game Over! Score: %d", score);
     LCD_DrawString(30, 100, WHITE, BLACK, end_text, 16, 0);
+    if (score > high_score) {
+        high_score = score;
+        save_high_score(high_score);  // Save new high score to EEPROM
+        for (volatile int i = 0; i < 100000; i++); // short delay (~5ms)
+    }
 
+    char hs_text[40];
+    sprintf(hs_text, "High Score: %d", high_score);
+    LCD_DrawString(30, 130, WHITE, BLACK, hs_text, 16, 0);
+    //i2c_stop_prom();
     while(1); // Stay stuck after game ends
 }
