@@ -16,13 +16,11 @@ int main(void) {
     //play_game();
 
     enable_ports_gesture();
-    init_i2c();
-    i2c_start_(0x39, 0, 0);
-    i2c_write(0x80, 1);
-    i2c_stop();
-
-    //buzz_for_sound(1000);
-
-    //buzz_forever();
+    init_i2c_gesture();
+    apds9960_init();
+    while (1){
+        char x = detect_left_or_right_gesture();
+    }
+    delay_ms(200);
     return 0;
 }
