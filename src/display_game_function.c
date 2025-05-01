@@ -3,9 +3,11 @@
 #include "lcd.h"
 #include "stm32f0xx.h"
 #include <string.h>
+#include <apds9960.h>
 #include <stdio.h>
 #include "sound.h"
 #include "eeprom.h"
+#include "gesture.h"
 
 int high_score = 0;  // EEPROM-loaded high score
 
@@ -145,12 +147,12 @@ void setup_game_screen(void) {
 void move_paddle_left(void) {
     if (paddle_x > 0) {
         erase_paddle();
-        paddle_x -= 5;
+        paddle_x -= 2;
         draw_paddle();
         
         if (!ball_moving) {
             erase_ball();
-            ball_x -= 5;
+            ball_x -= 2;
             draw_ball();
         }
     }
@@ -159,12 +161,12 @@ void move_paddle_left(void) {
 void move_paddle_right(void) {
     if (paddle_x + PADDLE_WIDTH < LCD_W) {
         erase_paddle();
-        paddle_x += 5;
+        paddle_x += 2;
         draw_paddle();
         
         if (!ball_moving) {
             erase_ball();
-            ball_x += 5;
+            ball_x += 2;
             draw_ball();
         }
     }
@@ -233,18 +235,24 @@ void play_game(void) {
     init_buttons();
     enable_ports_eeprom();
     init_i2c_eeprom();
+    enable_ports_gesture();
+    init_i2c_gesture();
+    apds9960init();           // Init the sensor
+    enableGestureSensor(0);
     //i2c_start_prom(0x000, 3, 0);
     setup_game_screen();
 
     int frame_counter = 0;  // Frame counter for timing seconds
-
+    
     while (1) {
-        if (is_button_pressed(1)) {
+        char gesture = detect_left_or_right_gesture();
+        if (gesture == 'R') {
             move_paddle_left();
         }
-        if (is_button_pressed(2)) {
+        if (gesture == 'L') {
             move_paddle_right();
         }
+
         if (is_button_pressed(3)) {
             init_buzzer();
             buzz_with_dac(10, 200);

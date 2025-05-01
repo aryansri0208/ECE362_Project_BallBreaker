@@ -1,7 +1,9 @@
 #include "gesture.h"
 #include "stm32f0xx.h"
-
-#define APDS9960_I2C_ADDR 0x39
+#include "apds9960.h"
+#include "stdlib.h"
+#include "stdbool.h"
+#include "i2c_hal.h"
 
 void enable_ports_gesture() {
     RCC->AHBENR |= RCC_AHBENR_GPIOAEN;
@@ -15,7 +17,7 @@ void enable_ports_gesture() {
 void init_i2c_gesture() {
     RCC->APB1ENR |= RCC_APB1ENR_I2C2EN;
     I2C2->CR1 &= ~I2C_CR1_PE;
-    I2C2->CR1 |= I2C_CR1_ANFOFF | I2C_CR1_ERRIE | I2C_CR1_NOSTRETCH;
+    I2C2->CR1 |= I2C_CR1_ANFOFF | I2C_CR1_ERRIE;
 
     I2C2->TIMINGR = 0;
     I2C2->TIMINGR = (0x5<<28) | (0x3<<20) | (0x1<<16) | (0x3<<8) | (0x9<<0);
@@ -23,6 +25,17 @@ void init_i2c_gesture() {
     I2C2->CR2 &= ~I2C_CR2_ADD10;
     I2C2->CR1 |= I2C_CR1_PE;
 }
+
+
+
+
+
+
+
+
+
+
+////extra functions
 
 void i2c_waitidle_gesture(void) {
     while ((I2C2->ISR & I2C_ISR_BUSY) != 0) {}
@@ -67,7 +80,7 @@ int i2c_senddata_gesture(uint8_t addr, uint8_t *data, uint8_t size) {
         }
         I2C2->TXDR = data[i];
     }
-    while (!(I2C2->ISR & I2C_ISR_TC) && !(I2C2->ISR & I2C_ISR_NACKF)) {}
+    while (!(I2C2->ISR & I2C_ISR_TC) && (I2C2->ISR & I2C_ISR_NACKF)) {}
     if (I2C2->ISR & I2C_ISR_NACKF) return -1;
     i2c_stop_gesture();
     return 0;
@@ -124,50 +137,4 @@ char detect_left_or_right_gesture() {
     if (left - right > 100) return 'L';
     if (right - left > 100) return 'R';
     return 'N';
-}
-
-void apds9960_init() {
-    char data;
-
-    // Power on the device (PON = 1)
-    data = 0x01;
-    gesture_write(0x80, &data, 1); // ENABLE register
-
-    delay_ms(10); // Small delay for power-up
-
-    // Set default gesture thresholds
-    data = 40;
-    gesture_write(0xA0, &data, 1); // GPENTH (gesture entry threshold)
-    data = 30;
-    gesture_write(0xA1, &data, 1); // GEXTH (gesture exit threshold)
-
-    // Set gesture config: 4 datasets, exit after 1 dataset
-    data = 0x40;
-    gesture_write(0xA2, &data, 1); // GCONF1
-
-    // Gain = 4x, LED Drive = 100mA, wait time = 2.8ms
-    data = (0x2 << 5) | (0x0 << 3) | 0x1;
-    gesture_write(0xA3, &data, 1); // GCONF2
-
-    // All photodiodes active
-    data = 0x00;
-    gesture_write(0xAA, &data, 1); // GCONF3
-
-    // Enable gesture engine
-    data = 0x01;
-    gesture_write(0xAB, &data, 1); // GCONF4
-
-    // Set wait time to 0xFF (max), and gesture pulse count
-    data = 0xFF;
-    gesture_write(0x83, &data, 1); // WTIME
-    data = 0x89;
-    gesture_write(0x8E, &data, 1); // PPULSE
-
-    // Boost LED current (optional)
-    data = 0x40;
-    gesture_write(0x90, &data, 1); // CONFIG2
-
-    // Enable Gesture, Proximity, Wait, Power
-    data = 0x4D;
-    gesture_write(0x80, &data, 1); // ENABLE again (GEN | PEN | WEN | PON)
 }
